@@ -147,9 +147,16 @@ Return ONLY a JSON object with these fields:
 Allowed metric values:
 - revenue: total money from paid orders
 - refunds: total money from refunded orders
+- average_order_value: average USD value per order
 - order_count: number of orders
 - customer_count: number of distinct customers
 - quantity: total quantity of items
+
+For questions containing "average order", "on average",
+or "average order value", use metric="average_order_value".
+Calculate average_order_value by dividing the total USD value
+of the matching orders by the number of matching orders.
+Do not return the total when the question asks for an average.
 
 Allowed group_by values:
 - null
@@ -221,6 +228,7 @@ def interpret_question(question):
     allowed_metrics = {
         "revenue",
         "refunds",
+        "average_order_value",
         "order_count",
         "customer_count",
         "quantity",
@@ -306,6 +314,17 @@ def calculate_answer(instructions):
 
         if metric == "order_count":
             return len(orders)
+
+        if metric == "average_order_value":
+            if not orders:
+                return 0.0
+
+            total_usd = sum(
+                order_amount_usd(order)
+                for order in orders
+            )
+
+            return round(total_usd / len(orders), 2)
 
         return sum(value_for(order) for order in orders)
 
@@ -445,8 +464,8 @@ def answer_question(request: QuestionRequest):
 
 if __name__ == "__main__":
     test_question = (
-    "In February 2026, what was the top-selling product by revenue (in USD)?"
-)
+        "On average, how many US dollars is a paid Central order worth?"
+    )
 
     instructions = interpret_question(test_question)
     answer = calculate_answer(instructions)
