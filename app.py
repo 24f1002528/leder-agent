@@ -363,8 +363,19 @@ def calculate_answer(instructions):
             results.sort(key=lambda item: item["name"])
 
         limit = instructions.get("limit")
+
         if isinstance(limit, int) and limit > 0:
             results = results[:limit]
+
+        # Questions asking for the top product should return
+        # the product name, not a list of grouped results.
+        if (
+            group_by == "product"
+            and instructions.get("sort_by") == "revenue"
+            and limit == 1
+            and results
+        ):
+            return results[0]["name"]
 
         if metric in ("revenue", "refunds"):
             results = [
