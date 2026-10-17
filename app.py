@@ -367,8 +367,8 @@ def calculate_answer(instructions):
         if isinstance(limit, int) and limit > 0:
             results = results[:limit]
 
-        # Questions asking for the top product should return
-        # the product name, not a list of grouped results.
+        # Return just the product name when asked for the
+        # single top-selling product by revenue.
         if (
             group_by == "product"
             and instructions.get("sort_by") == "revenue"
@@ -445,9 +445,8 @@ def answer_question(request: QuestionRequest):
 
 if __name__ == "__main__":
     test_question = (
-        "What was the total revenue in USD from the North "
-        "region in March 2026?"
-    )
+    "In February 2026, what was the top-selling product by revenue (in USD)?"
+)
 
     instructions = interpret_question(test_question)
     answer = calculate_answer(instructions)
